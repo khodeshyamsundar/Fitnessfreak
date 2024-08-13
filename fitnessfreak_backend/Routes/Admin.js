@@ -6,6 +6,7 @@ const errorHandler = require('../Middlewares/errorMiddleware');
 const adminTokenHandler = require('../Middlewares/checkAdminToken');
 
 const jwt = require('jsonwebtoken');
+const { cookieOptions } = require('../utils');
 
 function createResponse(ok, message, data) {
     return {
@@ -60,10 +61,10 @@ router.post('/login', async (req, res, next) => {
         }
 
         // Generate an authentication token for the admin
-        //res.cookie('adminAuthToken', adminAuthToken, { httpOnly: true });
+       
         const adminAuthToken = jwt.sign({ adminId: admin._id }, process.env.JWT_ADMIN_SECRET_KEY, { expiresIn: '10m' });
 
-        res.cookie('adminAuthToken', adminAuthToken);
+        res.cookie('adminAuthToken', adminAuthToken, cookieOptions);
         res.status(200).json(createResponse(true, 'Admin login successful', { adminAuthToken }));
     } catch (err) {
         next(err);
@@ -80,13 +81,13 @@ router.get('/checklogin', adminTokenHandler, async (req, res) => {
     })
 })
 
-//.clearCookie("adminAuthToken", { httpOnly: true })
+
 router.post('/logout', adminTokenHandler, async (req, res, next) => {
     try {
         console.log("logging admin out start...")
         return res
             .status(200)
-            .clearCookie("adminAuthToken")
+            .clearCookie("adminAuthToken", cookieOptions)
             .json(createResponse(true, 'Logout successful'))
     } catch (error) {
         next(error)

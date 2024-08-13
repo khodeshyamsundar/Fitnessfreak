@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { cookieOptions } = require('../utils');
 
 function checkAuth(req, res, next) {
     const authToken = req.cookies.authToken;
@@ -22,12 +23,11 @@ function checkAuth(req, res, next) {
                     const newAuthToken = jwt.sign({ userId: refreshDecoded.userId }, process.env.JWT_SECRET_KEY, { expiresIn: '10m' });
                     const newRefreshToken = jwt.sign({ userId: refreshDecoded.userId }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '10d' });
                     
-                    // res.cookie('authToken', newAuthToken, { httpOnly: true } ,{sameSite: 'None'});
-                    // res.cookie('refreshToken', newRefreshToken, { httpOnly: true }, {sameSite: 'None'});
+                    
                     // Set the new tokens as cookies in the response
-                    res.cookie('authToken', newAuthToken ,{sameSite: 'None'});
-                    res.cookie('refreshToken', newRefreshToken,  {sameSite: 'None'});
-
+                    
+                    res.cookie('authToken', newAuthToken, cookieOptions);
+                    res.cookie('refreshToken', newRefreshToken, cookieOptions);
                     // Continue processing the request with the new auth token
                     req.userId = refreshDecoded.userId;
                     req.ok = true;

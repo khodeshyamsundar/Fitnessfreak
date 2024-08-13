@@ -6,6 +6,7 @@ const authTokenHandler = require('../Middlewares/checkAuthToken');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
+const { cookieOptions } = require('../utils');
 
 //ardo snju okez dpwp
 const transporter = nodemailer.createTransport({
@@ -110,12 +111,10 @@ router.post('/login', async (req, res, next) => {
            
         const authToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '50m' });
         const refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_REFRESH_SECRET_KEY, { expiresIn: '100m' });
-        // res.cookie('authToken', authToken, { httpOnly: true }, {sameSite: 'None'});
-        // res.cookie('refreshToken', refreshToken, { httpOnly: true }, {sameSite: 'None'});
-
-
-        res.cookie('authToken', authToken,  {sameSite: 'None'});
-        res.cookie('refreshToken', refreshToken,  {sameSite: 'None'});
+       
+       
+        res.cookie('authToken', authToken, cookieOptions);
+        res.cookie('refreshToken', refreshToken, cookieOptions);
         res.status(200).json(createResponse(true, 'Login successful', {
             authToken,
             refreshToken
@@ -127,15 +126,14 @@ router.post('/login', async (req, res, next) => {
 })
 
 
-// .clearCookie("authToken", { httpOnly: true })
-//  .clearCookie("refreshToken", { httpOnly: true })
+
 router.post('/logout', authTokenHandler, async (req, res, next) => {
     try {
         console.log("logging out start...")
         return res
             .status(200)
-            .clearCookie("authToken")
-            .clearCookie("refreshToken")
+            .clearCookie("authToken", cookieOptions)
+            .clearCookie("refreshToken", cookieOptions)
             .json(createResponse(true, 'Logout successful'))
     } catch (error) {
         next(error)
